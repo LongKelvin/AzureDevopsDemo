@@ -1,0 +1,1 @@
+[![Build Status](https://dev.azure.com/LongKelvin/AzureDevopsDemo/_apis/build/status/Build%20Project?branchName=azure-pipelines-build-netcore-project)](https://dev.azure.com/LongKelvin/AzureDevopsDemo/_build/latest?definitionId=9&branchName=azure-pipelines-build-netcore-project)
