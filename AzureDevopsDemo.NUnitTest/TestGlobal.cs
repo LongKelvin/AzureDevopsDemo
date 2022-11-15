@@ -37,11 +37,5 @@ namespace AzureDevopsDemo.NUnitTest
         {
             Assert.Pass();
         }
-
-        [Test]
-        public void TestGlobal_Failed() 
-        {
-            Assert.Fail();
-        }
     }
 }
