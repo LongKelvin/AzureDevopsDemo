@@ -1,0 +1,73 @@
+trigger:
+  - '*'
+variables:
+          solution: '**/*.sln'
+          buildPlatform: Any CPU
+          buildConfiguration: Release
+stages:
+  - stage: Build
+    displayName: Build the web application
+    jobs:
+      - job: Build
+        displayName: Build job
+        pool:
+          name: Self-hosted
+          demands:
+            - agent.name -equals AspnetSelfhost
+        
+          
+        steps:
+          - task: NuGetToolInstaller@1
+          - task: NuGetCommand@2
+            inputs:
+              restoreSolution: $(solution)
+          - task: VSBuild@1
+            inputs:
+              solution: $(solution)
+              msbuildArgs: >-
+                /p:DeployOnBuild=true /p:WebPublishMethod=Package
+                /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true
+                /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip"
+                /p:DeployIisAppPath="Default Web Site"
+              platform: $(buildPlatform)
+              configuration: $(buildConfiguration)
+          - template: templates/build.yml
+            parameters:
+              buildConfiguration: Debug
+          - template: templates/build.yml
+            parameters:
+              buildConfiguration: Release
+          - task: DotNetCoreCLI@2
+            displayName: Run unit tests - $(buildConfiguration)
+            inputs:
+              command: test
+              arguments: '--no-build --configuration $(buildConfiguration)'
+              publishTestResults: true
+              projects: '**/*.NUnitTest.csproj'
+          - task: PublishBuildArtifacts@1
+            displayName: 'Publish Artifact: drop'
+            condition: succeeded()
+  - stage: 'Deploy'
+    displayName: 'Deploy the web application'
+    dependsOn: Build
+    jobs:
+    - deployment: Deploy
+      pool:
+          name: Self-hosted
+          demands:
+            - agent.name -equals AspnetSelfhost
+      environment: dev
+      variables:
+      - group: Release
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - download: current
+              artifact: drop
+            - task: AzureWebApp@1
+              displayName: 'Azure App Service Deploy: website'
+              inputs:
+                azureSubscription: 'RM-AzureDevopsBeta'
+                appName: '$(AzureDevopsWebAppName)'
+                package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/AzureDevopsDemo.zip'
