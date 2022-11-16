@@ -5,6 +5,7 @@ variables:
   buildPlatform: Any CPU
   buildConfiguration: Release
   releaseBranchName: "release"
+  
 
 schedules:
 - cron: '0 3 * * *'
