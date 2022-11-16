@@ -1,21 +1,21 @@
 trigger:
-  - '*'
+  - "*"
 variables:
-          solution: '**/*.sln'
-          buildPlatform: Any CPU
-          buildConfiguration: Release
+  solution: "**/*.sln"
+  buildPlatform: Any CPU
+  buildConfiguration: Release
+  releaseBranchName: "release"
 stages:
   - stage: Build
     displayName: Build the web application
     jobs:
       - job: Build
-        displayName: Build job
+        displayName: Build the web application
         pool:
           name: Self-hosted
           demands:
             - agent.name -equals AspnetSelfhost
-        
-          
+
         steps:
           - task: NuGetToolInstaller@1
           - task: NuGetCommand@2
@@ -41,33 +41,39 @@ stages:
             displayName: Run unit tests - $(buildConfiguration)
             inputs:
               command: test
-              arguments: '--no-build --configuration $(buildConfiguration)'
+              arguments: "--no-build --configuration $(buildConfiguration)"
               publishTestResults: true
-              projects: '**/*.NUnitTest.csproj'
+              projects: "**/*.NUnitTest.csproj"
           - task: PublishBuildArtifacts@1
-            displayName: 'Publish Artifact: drop'
+            displayName: "Publish Artifact: drop"
             condition: succeeded()
-  - stage: 'Deploy'
-    displayName: 'Deploy the web application'
+  - stage: "Dev"
+    displayName: "Deploy the web application to Dev enviroment"
     dependsOn: Build
+    condition: |
+      and
+      (
+        succeeded(),
+        eq(variables['Build.SourceBranchName'], variables['releaseBranchName'])
+      )
     jobs:
-    - deployment: Deploy
-      pool:
+      - deployment: Deploy
+        pool:
           name: Self-hosted
           demands:
             - agent.name -equals AspnetSelfhost
-      environment: dev
-      variables:
-      - group: Release
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - download: current
-              artifact: drop
-            - task: AzureWebApp@1
-              displayName: 'Azure App Service Deploy: website'
-              inputs:
-                azureSubscription: 'RM-AzureDevopsBeta'
-                appName: '$(AzureDevopsWebAppName)'
-                package: '$(Pipeline.Workspace)/drop/$(buildConfiguration)/AzureDevopsDemo.zip'
+        environment: dev
+        variables:
+          - group: Release
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+                - task: AzureWebApp@1
+                  displayName: "Azure App Service Deploy: website"
+                  inputs:
+                    azureSubscription: "AzureDevopsServiceConnection"
+                    appName: "$(AzureDevopsWebAppName_DEV)"
+                    package: "$(Pipeline.Workspace)/drop/$(buildConfiguration)/AzureDevopsDemo.zip"
