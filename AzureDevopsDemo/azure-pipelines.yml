@@ -5,6 +5,15 @@ variables:
   buildPlatform: Any CPU
   buildConfiguration: Release
   releaseBranchName: "release"
+
+schedules:
+- cron: '0 3 * * *'
+  displayName: 'Deploy every day at 3 A.M.'
+  branches:
+    include:
+    - release
+  always: false 
+
 stages:
   - stage: Build
     displayName: Build the web application
@@ -76,4 +85,30 @@ stages:
                   inputs:
                     azureSubscription: "AzureDevopsServiceConnection"
                     appName: "$(AzureDevopsWebAppName_DEV)"
+                    package: "$(Pipeline.Workspace)/drop/$(buildConfiguration)/AzureDevopsDemo.zip"
+
+  - stage: "Test"
+    displayName: "Deploy the web application to Test enviroment"
+    dependsOn: Dev
+    #condition: eq(variables['Build.Reason'], 'Schedule')
+    jobs:
+      - deployment: Deploy
+        pool:
+          name: Self-hosted
+          demands:
+            - agent.name -equals AspnetSelfhost
+        environment: dev
+        variables:
+          - group: Release
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+                - task: AzureWebApp@1
+                  displayName: "Azure App Service Deploy: website Test Env"
+                  inputs:
+                    azureSubscription: "AzureDevopsServiceConnection"
+                    appName: "$(AzureDevopsWebAppName_TEST)"
                     package: "$(Pipeline.Workspace)/drop/$(buildConfiguration)/AzureDevopsDemo.zip"
