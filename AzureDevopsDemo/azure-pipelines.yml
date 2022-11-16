@@ -97,7 +97,7 @@ stages:
           name: Self-hosted
           demands:
             - agent.name -equals AspnetSelfhost
-        environment: dev
+        environment: test
         variables:
           - group: Release
         strategy:
@@ -111,4 +111,29 @@ stages:
                   inputs:
                     azureSubscription: "AzureDevopsServiceConnection"
                     appName: "$(AzureDevopsWebAppName_TEST)"
+                    package: "$(Pipeline.Workspace)/drop/$(buildConfiguration)/AzureDevopsDemo.zip"
+  - stage: "Staging"
+    displayName: "Deploy to Staging enviroment"
+    dependsOn: Test
+    #condition: eq(variables['Build.Reason'], 'Schedule')
+    jobs:
+      - deployment: Deploy
+        pool:
+          name: Self-hosted
+          demands:
+            - agent.name -equals AspnetSelfhost
+        environment: staging
+        variables:
+          - group: Release
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: drop
+                - task: AzureWebApp@1
+                  displayName: "Azure App Service Deploy: website Test Env"
+                  inputs:
+                    azureSubscription: "AzureDevopsServiceConnection"
+                    appName: "$(AzureDevopsWebAppName_STAGING)"
                     package: "$(Pipeline.Workspace)/drop/$(buildConfiguration)/AzureDevopsDemo.zip"
