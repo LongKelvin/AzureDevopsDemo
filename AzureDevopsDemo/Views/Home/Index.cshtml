@@ -6,3 +6,36 @@
     <h1 class="display-4">Welcome to Azure Devops</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
 </div>
+
+
+<button onclick="showModal()" type="button" class="btn btn-primary" id="btnShowModal">
+    Launch demo modal
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="welcomeModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h3>Welcome to Web application</h3>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeModal()" id="close" type="button" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showModal() {
+        $('#welcomeModal').modal('show');
+    }
+
+    function closeModal() {
+        $('#welcomeModal').modal('hide');
+    }
+</script>
