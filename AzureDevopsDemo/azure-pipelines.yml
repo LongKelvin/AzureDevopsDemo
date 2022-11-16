@@ -4,8 +4,8 @@ variables:
   solution: "**/*.sln"
   buildPlatform: Any CPU
   buildConfiguration: Release
-  #releaseBranchName: "release"
-  releaseBranchName: "selenium-test"
+  releaseBranchName: "release"
+  
 
 schedules:
 - cron: '0 3 * * *'
