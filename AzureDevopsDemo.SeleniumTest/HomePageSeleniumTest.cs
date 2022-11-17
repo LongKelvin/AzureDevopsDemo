@@ -2,6 +2,7 @@
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
+using OpenQA.Selenium.Support.UI;
 
 using System;
 using System.Collections.Generic;
@@ -9,12 +10,13 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using SeleniumExtras.WaitHelpers;
 
 namespace AzureDevopsDemo.SeleniumTest
 {
     [TestFixture("Chrome")]
-    //[TestFixture("Firefox")]
-    //[TestFixture("Edge")]
+    [TestFixture("Firefox")]
+    [TestFixture("Edge")]
     public class HomePageSeleniumTest
     {
         private IWebDriver driver;
@@ -36,12 +38,12 @@ namespace AzureDevopsDemo.SeleniumTest
                 case "Chrome":
                     driver = new ChromeDriver();
                     break;
-                //case "Firefox":
-                //    driver = new FirefoxDriver();
-                //    break;
-                //case "Edge":
-                //    driver = new EdgeDriver();
-                //    break;
+                case "Firefox":
+                    driver = new FirefoxDriver();
+                    break;
+                case "Edge":
+                    driver = new EdgeDriver();
+                    break;
                 default:
                     throw new ArgumentException($"'{browser}': Unknown browser");
             }
@@ -56,24 +58,30 @@ namespace AzureDevopsDemo.SeleniumTest
 
             driver.FindElement(By.Id(linkId)).Click();
             var modalById = driver.FindElement(By.Id(modalId));
-          
+
             var modal = driver.FindElement(By.Id(modalId));
             bool modalIsDisplay = modal != null;
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(15));
 
-            driver.Quit();
+            if (modalIsDisplay)
+            {
 
-            //if (modalIsDisplay)
-            //{
-               
-            //    driver.FindElement(By.Id("close")).Click();
-            //    driver.FindElement(By.TagName("body"));
-            //}
-            //else
-            //{
-            //    Trace.TraceError("modal not display");
-            //}
+                IWebElement closeElement = wait.Until(ExpectedConditions.ElementToBeClickable(By.Id("close")));
+                closeElement.Click();
+                driver.FindElement(By.TagName("body"));
+            }
+            else
+            {
+                Trace.TraceError("modal not display");
+            }
 
             Assert.That(modalIsDisplay, Is.True);
+        }
+
+        [TearDown]
+        public void CloseBrowser()
+        {
+            driver.Quit();
         }
     }
 }
