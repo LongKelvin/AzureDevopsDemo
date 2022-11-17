@@ -47,6 +47,12 @@ stages:
           - template: templates/build.yml
             parameters:
               buildConfiguration: Release
+          
+          - task: NuGetCommand@2
+            inputs:
+              command: 'restore'
+              restoreSolution: '**/*.sln'
+              feedsToUse: 'select'
           - task: DotNetCoreCLI@2
             displayName: Run unit tests - $(buildConfiguration)
             inputs:
