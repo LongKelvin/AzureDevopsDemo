@@ -47,6 +47,8 @@ stages:
           - template: templates/build.yml
             parameters:
               buildConfiguration: Release
+
+         
           - task: DotNetCoreCLI@2
             displayName: Run unit tests - $(buildConfiguration)
             inputs:
