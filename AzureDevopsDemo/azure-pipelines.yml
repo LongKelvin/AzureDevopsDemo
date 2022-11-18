@@ -152,7 +152,9 @@ stages:
         dependsOn: Deploy
         displayName: 'Run load tests'
         pool:
-          vmImage: 'ubuntu-20.04'
+          name: Ubuntu_2204_AgentHost
+          demands:
+            - agent.name -equals Ubuntu2204
         variables:
         - group: Release
         steps:
